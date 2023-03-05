@@ -1,6 +1,7 @@
 import numpy as np, pandas as pd, seaborn as sns, matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 from sklearn.datasets import make_moons
+from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
 import math
 
@@ -15,11 +16,12 @@ def GUC_Distance (Cluster_Centroids, Data_points, Distance_Type ):
     Cluster_Distance = np.zeros((len_x,len_c),'d') -1
     
     if Distance_Type == 0:
-        for i in range(len_x):
-            for j in range(len_c):
-                diff_arr = np.subtract(Cluster_Centroids[j],Data_points[i])
-                sq_diff_arr = np.square(diff_arr)
-                Cluster_Distance[i][j] = np.sqrt(np.sum(sq_diff_arr))
+        Cluster_Distance = cdist(Data_points, Cluster_Centroids,'euclidean')
+        # for i in range(len_x):
+        #     for j in range(len_c):
+        #         diff_arr = np.subtract(Cluster_Centroids[j],Data_points[i])
+        #         sq_diff_arr = np.square(diff_arr)
+        #         Cluster_Distance[i][j] = np.sqrt(np.sum(sq_diff_arr))
     
     if Distance_Type == 1:
         Cluster_Distance = cdist(Data_points, Cluster_Centroids,'correlation')
@@ -88,7 +90,7 @@ def GUC_Kmean ( Data_points, Number_of_Clusters,  Distance_Type ):
     #Final_Cluster_Distance = np.zeros((len_x),'d') -1
     Cluster_Metric = math.inf
     
-    for runs in range(10):
+    for runs in range(100):
         #Assgn_Cluster = np.zeros((len_x),'d') -1
         #Assgn_Cluster_Distance = np.zeros((len_x),'d') -1
         #Metric = -1
@@ -125,6 +127,7 @@ def GUC_Kmean ( Data_points, Number_of_Clusters,  Distance_Type ):
 # helper function that allows us to display data in 2 dimensions an...
 #   ...highlights the clusters
 def display_cluster(X,km=[],num_clusters=0):
+    plt.figure()
     color = 'brgcmyk'  #List colors
     alpha = 0.5  #color obaque
     s = 20
@@ -140,8 +143,11 @@ def display_cluster(X,km=[],num_clusters=0):
 ############################################################################
 ############################################################################
 
+distance_type = 0
+
+
 # K-means of Circular Data
-"""
+#"""
 # prepare the figure sise and background 
 # this part can be replaced by a number of subplots 
 plt.rcParams['figure.figsize'] = [8,8]
@@ -156,72 +162,74 @@ X = np.append([np.cos(angle)],[np.sin(angle)],0).transpose()
 #   ...which is the default of the fuction 
 display_cluster(X)
 
-
+fig, axs = plt.subplots(3,3,figsize=(25, 25))
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, 0)
-    plt.figure()
-    plt.scatter(np.transpose(X)[0],np.transpose(X)[1],c=Final_Assgn_Cluster)
-    plt.scatter(np.transpose(Final_Cluster_Centroids)[0],\
-                np.transpose(Final_Cluster_Centroids)[1],c=np.arange(i+2),\
-                    marker='x')
+     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
+    #plt.figure()
+    axs[i//3,i%3].scatter(np.transpose(X)[0],np.transpose(X)[1],\
+                          c=Final_Assgn_Cluster,s=250)
+    axs[i//3,i%3].scatter(np.transpose(Final_Cluster_Centroids)[0],\
+                          np.transpose(Final_Cluster_Centroids)[1],\
+                              c=np.arange(i+2),marker='x',s=250)
     metric[i] = Cluster_Metric
 plt.figure()
 plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Circular Data")
-"""
+#"""
 
 ############################################################################
 
 # K-means of Multi-Blob Data
-"""
+#"""
 n_samples = 1000
 n_bins = 4  
 centers = [(-3, -3), (0, 0), (3, 3), (6, 6), (9,9)]
 X, y = make_blobs(n_samples=n_samples, n_features=2, cluster_std=1.0,
                   centers=centers, shuffle=False, random_state=42)
-#display_cluster(X)
+display_cluster(X)
 
-
+fig, axs = plt.subplots(3,3,figsize=(25, 25))
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, 0)
-    plt.figure()
-    plt.scatter(np.transpose(X)[0],np.transpose(X)[1],c=Final_Assgn_Cluster)
-    plt.scatter(np.transpose(Final_Cluster_Centroids)[0],\
-                np.transpose(Final_Cluster_Centroids)[1],c=np.arange(i+2),\
-                    marker='x')
+     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
+    #plt.figure()
+    axs[i//3,i%3].scatter(np.transpose(X)[0],np.transpose(X)[1],\
+                          c=Final_Assgn_Cluster)
+    axs[i//3,i%3].scatter(np.transpose(Final_Cluster_Centroids)[0],\
+                          np.transpose(Final_Cluster_Centroids)[1],\
+                              c=np.arange(i+2),marker='x')
     metric[i] = Cluster_Metric
 plt.figure()
 plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Multi-Blob Data")
-"""
+#"""
 
 ############################################################################
 
 # K-means of Moon Data
-"""
+#"""
 n_samples = 1000
 X, y = noisy_moons = make_moons(n_samples=n_samples, noise= .1)
-#display_cluster(X)
+display_cluster(X)
 
-
+fig, axs = plt.subplots(3,3,figsize=(25, 25))
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, 0)
-    plt.figure()
-    plt.scatter(np.transpose(X)[0],np.transpose(X)[1],c=Final_Assgn_Cluster)
-    plt.scatter(np.transpose(Final_Cluster_Centroids)[0],\
+     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
+    #plt.figure()
+    axs[i//3,i%3].scatter(np.transpose(X)[0],np.transpose(X)[1],c=Final_Assgn_Cluster)
+    axs[i//3,i%3].scatter(np.transpose(Final_Cluster_Centroids)[0],\
                 np.transpose(Final_Cluster_Centroids)[1],c=np.arange(i+2),\
                     marker='x')
     metric[i] = Cluster_Metric
@@ -230,10 +238,11 @@ plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Moon Data")
-"""
+#"""
 
 ############################################################################
 
+#"""
 customer_data = pd.read_csv("Customer data.csv")
 customer_data.drop_duplicates(inplace = True)
 customer_data.dropna(inplace = True)
@@ -245,15 +254,20 @@ customer_data.info()
 # print(y)
 # x = customer_data.iloc[0]
 # print(x)
-X = customer_data.to_numpy()
+
+#X = customer_data.to_numpy()
+scale= StandardScaler()
+customer_data = scale.fit_transform(customer_data)
+X = customer_data
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, 0)
+     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
     metric[i] = Cluster_Metric
 plt.figure()
 plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Customer Data")
+#"""
