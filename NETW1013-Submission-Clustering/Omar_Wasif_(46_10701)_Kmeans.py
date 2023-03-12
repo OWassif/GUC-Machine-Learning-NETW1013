@@ -4,6 +4,8 @@ from sklearn.datasets import make_moons
 from sklearn.preprocessing import StandardScaler
 from scipy.spatial.distance import cdist
 import math
+from sklearn.metrics import silhouette_score
+from sklearn.decomposition import PCA
 
 ############################################################################
 ############################################################################
@@ -14,7 +16,6 @@ def GUC_Distance (Cluster_Centroids, Data_points, Distance_Type ):
     len_x = len(Data_points)
     
     Cluster_Distance = np.zeros((len_x,len_c),'d') -1
-    
     if Distance_Type == 0:
         Cluster_Distance = cdist(Data_points, Cluster_Centroids,'euclidean')
         # for i in range(len_x):
@@ -23,8 +24,11 @@ def GUC_Distance (Cluster_Centroids, Data_points, Distance_Type ):
         #         sq_diff_arr = np.square(diff_arr)
         #         Cluster_Distance[i][j] = np.sqrt(np.sum(sq_diff_arr))
     
-    if Distance_Type == 1:
+    elif Distance_Type == 1:
         Cluster_Distance = cdist(Data_points, Cluster_Centroids,'correlation')
+        
+    elif Distance_Type == 2:
+        Cluster_Distance = cdist(Data_points, Cluster_Centroids,'cosine')
     
     return Cluster_Distance 
 
@@ -144,10 +148,13 @@ def display_cluster(X,km=[],num_clusters=0):
 ############################################################################
 
 distance_type = 0
+dist_type = 'euclidean'
+
+############################################################################
+############################################################################
 
 
 # K-means of Circular Data
-#"""
 # prepare the figure sise and background 
 # this part can be replaced by a number of subplots 
 plt.rcParams['figure.figsize'] = [8,8]
@@ -180,94 +187,161 @@ plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Circular Data")
-#"""
+
 
 ############################################################################
 
 # K-means of Multi-Blob Data
-#"""
-n_samples = 1000
-n_bins = 4  
-centers = [(-3, -3), (0, 0), (3, 3), (6, 6), (9,9)]
-X, y = make_blobs(n_samples=n_samples, n_features=2, cluster_std=1.0,
-                  centers=centers, shuffle=False, random_state=42)
-display_cluster(X)
+
+plt.rcParams['figure.figsize'] = [8,8]
+sns.set_style("whitegrid")
+sns.set_context("talk")
+n_bins = 6  
+centers = [(-3, -3), (0, 0), (5,2.5),(-1, 4), (4, 6), (9,7)]
+Multi_blob_Data, y = make_blobs(n_samples=[100,150, 300, 400,300, 200],\
+                                n_features=2, \
+                                    cluster_std=[1.3,0.6, 1.2, 1.7,0.9,1.7],\
+                                        centers=centers, \
+                                            shuffle=False, random_state=42)
+display_cluster(Multi_blob_Data)
 
 fig, axs = plt.subplots(3,3,figsize=(25, 25))
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
+silhouette_kmeans = np.zeros(9,'d')-2
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
+     Final_Assgn_Cluster ] = GUC_Kmean(Multi_blob_Data, i+2, distance_type)
     #plt.figure()
-    axs[i//3,i%3].scatter(np.transpose(X)[0],np.transpose(X)[1],\
+    axs[i//3,i%3].scatter(np.transpose(Multi_blob_Data)[0],np.transpose(Multi_blob_Data)[1],\
                           c=Final_Assgn_Cluster)
     axs[i//3,i%3].scatter(np.transpose(Final_Cluster_Centroids)[0],\
                           np.transpose(Final_Cluster_Centroids)[1],\
                               c=np.arange(i+2),marker='x')
     metric[i] = Cluster_Metric
+    silhouette_kmeans[i] = silhouette_score(Multi_blob_Data,\
+                                     Final_Assgn_Cluster, metric=dist_type)
 plt.figure()
 plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Multi-Blob Data")
-#"""
+
+plt.figure()
+plt.plot(K,silhouette_kmeans)
+plt.xlabel("Number of Clusters, K")
+plt.ylabel("Silhouette Score")
+plt.title("K-means of Multi-Blob Data")
+
 
 ############################################################################
 
 # K-means of Moon Data
-#"""
+
 n_samples = 1000
-X, y = noisy_moons = make_moons(n_samples=n_samples, noise= .1)
-display_cluster(X)
+Moons, y = noisy_moons = make_moons(n_samples=n_samples, noise= .1)
+display_cluster(Moons)
 
 fig, axs = plt.subplots(3,3,figsize=(25, 25))
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
+silhouette_kmeans = np.zeros(9,'d')-2
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
+     Final_Assgn_Cluster ] = GUC_Kmean(Moons, i+2, distance_type)
     #plt.figure()
-    axs[i//3,i%3].scatter(np.transpose(X)[0],np.transpose(X)[1],c=Final_Assgn_Cluster)
+    axs[i//3,i%3].scatter(np.transpose(Moons)[0],np.transpose(Moons)[1],c=Final_Assgn_Cluster)
     axs[i//3,i%3].scatter(np.transpose(Final_Cluster_Centroids)[0],\
                 np.transpose(Final_Cluster_Centroids)[1],c=np.arange(i+2),\
                     marker='x')
     metric[i] = Cluster_Metric
+    silhouette_kmeans[i] = silhouette_score(Moons,\
+                                     Final_Assgn_Cluster, metric=dist_type)
 plt.figure()
 plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
 plt.title("K-means of Moon Data")
+
+plt.figure()
+plt.plot(K,silhouette_kmeans)
+plt.xlabel("Number of Clusters, K")
+plt.ylabel("Silhouette Score")
+plt.title("K-means of Moons Data")
+
 #"""
 
 ############################################################################
 
-#"""
+# K-means of Customer Data
+
 customer_data = pd.read_csv("Customer data.csv")
 customer_data.drop_duplicates(inplace = True)
 customer_data.dropna(inplace = True)
 customer_data.set_index(['ID'],inplace = True)
-customer_data.info()
-#print(customer_data.columns)
-#z = customer_data[['Age']]
-# y = customer_data.loc[100000001]
-# print(y)
-# x = customer_data.iloc[0]
-# print(x)
-
-#X = customer_data.to_numpy()
+#customer_data.info()
+data = customer_data.to_numpy()
 scale= StandardScaler()
-customer_data = scale.fit_transform(customer_data)
-X = customer_data
+X = scale.fit_transform(customer_data)
+Z = PCA().fit_transform(X)  # with PCA
+
 metric = np.zeros(9,'d')
 K = np.array([2,3,4,5,6,7,8,9,10])
+silhouette_kmeans = np.zeros(9,'d')-2
 for i in range(9):
     [ Final_Cluster_Distance , Cluster_Metric , Final_Cluster_Centroids ,\
-     Final_Assgn_Cluster ] = GUC_Kmean(X, i+2, distance_type)
+     Final_Assgn_Cluster ] = GUC_Kmean(Z, i+2, distance_type)
     metric[i] = Cluster_Metric
+    silhouette_kmeans[i] = silhouette_score(Z,\
+                                     Final_Assgn_Cluster, metric=dist_type)
+    if i+2==2 or i+2==3 or i+2==4 or i+2==5:
+        fig, axs = plt.subplots(3,2,figsize=(25, 25))
+        fig.suptitle(f"K-means ({i+2} Clusters)", fontsize=50, y=0.93)
+        ##
+        axs[0,0].scatter(np.transpose(data)[4],\
+                np.transpose(data)[0],\
+                    c=Final_Assgn_Cluster, alpha = 1,s=150)
+        axs[0,0].set_xlabel("Income", fontsize=40)
+        axs[0,0].set_ylabel("Sex", fontsize=40)
+        ##
+        axs[0,1].scatter(np.transpose(data)[2],\
+                np.transpose(data)[1],\
+                    c=Final_Assgn_Cluster,alpha = 1,s=150)
+        axs[0,1].set_xlabel("Age", fontsize=40)
+        axs[0,1].set_ylabel("Marital Status", fontsize=40)
+        ##
+        axs[1,0].scatter(np.transpose(data)[4],\
+                np.transpose(data)[2],\
+                    c=Final_Assgn_Cluster,alpha = 1,s=150)
+        axs[1,0].set_xlabel("Income", fontsize=40)
+        axs[1,0].set_ylabel("Age", fontsize=40)
+        ##
+        axs[1,1].scatter(np.transpose(data)[4],\
+                np.transpose(data)[5],\
+                    c=Final_Assgn_Cluster,alpha = 1,s=150)
+        axs[1,1].set_xlabel("Income", fontsize=40)
+        axs[1,1].set_ylabel("Occupation", fontsize=40)
+        ##
+        axs[2,0].scatter(np.transpose(data)[4],\
+                np.transpose(data)[3],\
+                    c=Final_Assgn_Cluster,alpha = 1,s=150)
+        axs[2,0].set_xlabel("Income", fontsize=40)
+        axs[2,0].set_ylabel("Education ", fontsize=40)
+        ##
+        axs[2,1].scatter(np.transpose(data)[4],\
+                np.transpose(data)[6],\
+                    c=Final_Assgn_Cluster,alpha = 1,s=150)
+        axs[2,1].set_xlabel("Income", fontsize=40)
+        axs[2,1].set_ylabel("Settlement Size", fontsize=40)
 plt.figure()
 plt.plot(K,metric)
 plt.xlabel("Number of Clusters, K")
 plt.ylabel("Metric")
+plt.title("K-means of Customer Data")
+
+plt.figure()
+plt.plot(K,silhouette_kmeans)
+plt.xlabel("Number of Clusters, K")
+plt.ylabel("Silhouette Score")
 plt.title("K-means of Customer Data")
 #"""
