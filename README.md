@@ -10,6 +10,7 @@ It consists of six python scripts:
 4. Omar_Wasif_(46_10701)_Clustering_MultiBlob.py
 5. Omar_Wasif_(46_10701)_Clustering.py (contians parts of the "Moons" and "Multi-Blob" codes, redundant as dedicated scripts are submitted)
 6. Omar_Wasif_(46_10701)_Kmeans.py  (contains K-means code without use of predefined function)
+
 The results are contained in the "Clustering Figures" folder.
 
 # Classification Project (15.06.)
