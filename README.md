@@ -1,5 +1,12 @@
 ### Submission Overview
 
+# Classification Project (15.06.)
+
+The submission of the classification project can be found in the **"NETW1013-Submission-Classification"** folder.
+It consists of two notebooks:
+1. Classifiers.ipynb
+2. Data_Preprocessing.ipynb
+
 # Clustering Project (12.03.)
 
 The submission of the classification project can be found in the **"NETW1013-Submission-Clustering"** folder.
@@ -12,10 +19,3 @@ It consists of six python scripts:
 6. Omar_Wasif_(46_10701)_Kmeans.py  (contains K-means code without use of predefined function)
 
 The results are contained in the same folder under "Clustering Figures".
-
-# Classification Project (15.06.)
-
-The submission of the classification project can be found in the **"NETW1013-Submission-Classification"** folder.
-It consists of two notebooks:
-1. Classifiers.ipynb
-2. Data_Preprocessing.ipynb
