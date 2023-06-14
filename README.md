@@ -1,4 +1,4 @@
-%%% Submission Overview
+### Submission Overview
 
 % Clustering Project (12.03.)
 The submission of the classification project can be found in the "NETW1013-Submission-Clustering" folder.
